@@ -7,7 +7,7 @@ Each template encapsulates the core logic and behavior of a specific system comp
 
 The templates here form the backbone of the simulation/modeling framework and are integrated by the central controller during execution.
 
----
+
 
 ## Directory Overview
 
@@ -28,7 +28,7 @@ Each template focuses on defining:
 
 This separation ensures clarity, scalability, and ease of collaboration among team members.
 
----
+
 
 ## Group Member Contributions
 
@@ -42,7 +42,7 @@ Although all group members contributed across multiple components, the table bel
 | **Ujwal Keshava**      | Modelling Traffic Light and Emergency Vehicle logic templates |
 | **Girish Mundra**      | Modelling Vehicle logic and Central Controller templates      |
 
----
+
 
 ## Contribution Guidelines
 
@@ -52,7 +52,7 @@ Although all group members contributed across multiple components, the table bel
 * Commit changes with **clear, descriptive messages**
 * Use feature branches when making significant updates
 
----
+
 
 ## Notes
 
@@ -60,6 +60,3 @@ Although all group members contributed across multiple components, the table bel
 * Supporting utilities or helper functions should reside outside this folder
 * Documentation updates should reflect changes made to template logic
 
-
-
-Just tell me 👍
