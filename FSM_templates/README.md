@@ -11,7 +11,7 @@ The templates here form the backbone of the simulation/modeling framework and ar
 
 ## Directory Overview
 
-The `templates/` folder includes logic templates for:
+The `FSM_templates/` folder includes logic templates for:
 
 * **Vehicles**
 * **Pedestrians**
@@ -49,8 +49,7 @@ Although all group members contributed across multiple components, the table bel
 * Each template should remain **self-contained**
 * Avoid hard-coding parameters that may be configured globally
 * Follow consistent naming conventions across templates
-* Commit changes with **clear, descriptive messages**
-* Use feature branches when making significant updates
+
 
 
 
