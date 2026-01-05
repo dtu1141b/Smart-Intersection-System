@@ -1,0 +1,429 @@
+\documentclass[12pt,a4paper]{article}
+
+% ---------------- Packages ----------------
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}        % For images
+\usepackage{hyperref}        % For links
+\usepackage{setspace}        % For spacing
+\usepackage{natbib}          % For bibliography
+\usepackage{titlesec}        % For section spacing
+\usepackage{geometry}        % For margins
+\usepackage{amssymb}        % For math symbols including \Diamond
+\geometry{margin=1in}
+\setstretch{1.15}            % Slightly loose line spacing
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{amsmath}
+
+% Reduce space before/after sections
+\titlespacing*{\section}{0pt}{1.2ex plus .2ex}{0.8ex}
+\titlespacing*{\subsection}{0pt}{1.2ex plus .2ex}{0.8ex}
+
+% ---------------- Document Starts ----------------
+\begin{document}
+
+% ---------------- Title Page ----------------
+\thispagestyle{empty}
+\begin{center}
+
+% ---- Institution Logo ----
+\includegraphics[width=0.3\linewidth]{bits_logo.png} \\[1cm]
+{\Huge \textbf{Logic in Computer Science}} \\[1cm]
+
+{\Large \textbf{Assignment}} \\[0.3cm]
+{\large \textbf{Group Project on Modelling Traffic System in UPPAAL}} \\[1.2cm]
+
+{\large \textbf{Submitted to}} \\[0.3cm]
+{\Large \textbf{Dr. Jagat Sesh Challa}} \\[2.2cm]
+
+% -------- Assignment Description --------
+\parbox{0.85\linewidth}{
+\begin{center}
+\small
+\textbf{Assignment Description:} \\
+The assignment  focuses on the design and verification of a Smart Intersection system using the UPPAAL model checker. The work involves modelling traffic lights, pedestrian crossings, and emergency vehicle priority with realistic timing constraints and coordinated system behavior. The aim is to capture complex intersection dynamics through timed automata and to evaluate the system through simulation under normal traffic, pedestrian activity, and emergency scenarios. The assignment also includes the verification of key safety and liveness properties to ensure that the intersection operates correctly and efficiently in all considered conditions.
+\end{center}
+} \\[0.5cm]
+
+{\large \textbf{Submitted by}} \\[0.15cm]
+{\large \textbf{Dhaval Bothra, ID : 2024A7PS0536P}} \\[0.1cm]
+{\large \textbf{Kandarp Kalavadiya, ID : 2024A7PS0582P}} \\[0.1cm]
+{\large \textbf{Rachit Soni, ID : 2024A7PS0587P}} \\[0.1cm]
+{\large \textbf{Ujwal Keshava, ID : 2024A7PS0608P}} \\[0.1cm]
+{\large \textbf{Girish Mundra, ID : 2024A7PS0993P}} \\[0.1cm]
+\vfill
+\end{center}
+
+
+
+
+
+% ===================================================
+% PART A - JOURNAL ENTRY
+% ===================================================
+%---------------------------------------
+% Acknowledgement Page
+%---------------------------------------
+
+\newpage
+\thispagestyle{empty}
+
+\begin{center}
+    {\Large \textbf{NOVEMBER 2025}} \\[2cm]
+
+    {\Large \textbf{ACKNOWLEDGEMENT}} \\[1.2cm]
+\end{center}
+
+We would like to express our sincere gratitude to \textbf{Prof. Jagat Sesh Challa} for providing us with a strong foundation in Propositional Logic, Predicate Logic, and Floyd Hoare Logic. His clear explanations and structured approach greatly shaped our understanding of formal methods, which became essential while working on this assignment. \\[0.15cm]
+
+We are equally grateful to \textbf{Prof. Rajesh Kumar} for his engaging and insightful lectures on Satisfiability Solvers, Linear Temporal Logic and Computation Tree Logic. His emphasis on temporal reasoning and system verification helped us appreciate the theoretical depth behind the properties we analysed and modelled in UPPAAL. \\[0.15cm]
+
+We would also like to extend our appreciation to \textbf{Teaching Assistant Shivam Goyal}, whose tutorial sessions on UPPAAL were instrumental in helping us navigate the tool effectively. His patient guidance and hands-on demonstrations made the modelling and verification process far more approachable. \\[0.15cm]
+
+This assignment provided us with an opportunity to connect theoretical concepts with practical system modelling, and the collective support from our instructors made the experience both enriching and rewarding. We are truly thankful for their guidance throughout the course.
+
+
+\newpage
+
+%---------------------------------------
+% Main Sections
+%---------------------------------------
+% ===================================================
+% MAIN DOCUMENT CONTENT
+% ===================================================
+
+\section{Introduction}
+
+Modern traffic intersections involve complex coordination among vehicles, pedestrians, and emergency responders. 
+Traditional fixed-timer traffic controllers are insufficient in dynamic and high-traffic environments. Therefore, 
+this project models a \textbf{Smart Intersection System} using the UPPAAL model checker, leveraging timed automata 
+to simulate real-time constraints, synchronization between subsystems, and safety requirements.
+
+The objectives of the project are:
+\begin{itemize}
+    \item To model vehicles, pedestrian behaviour, and emergency priority within an intersection.
+    \item To design templates representing traffic lights, controllers, arrival processes, and crossing logic.
+    \item To ensure correctness through simulation and temporal-logic verification.
+    \item To verify key safety, reachability, and liveness properties.
+\end{itemize}
+
+This system models realistic constraints such as minimum/maximum green periods, pedestrian crossing time, emergency handling, 
+and queue reduction. The following sections describe each template in detail.
+
+
+% ===================================================
+% ASSUMPTIONS
+% ===================================================
+
+\section{Assumptions}
+
+The model incorporates the following assumptions for simplifying and formalizing the intersection behaviour:
+
+\begin{enumerate}
+    \item \textbf{Intersection Structure}  
+    Two main traffic directions: North–South (dir = 0) and East–West (dir = 1).  
+    Four sub-directions for arrivals: 0, 1, 2, 3, where South-North is dir = 2 and West-East is dir = 3.
+    
+    \item \textbf{Timing Constraints}  
+    \begin{itemize}
+        \item Maximum Green: 60 seconds  
+        \item Minimum Green: 15 seconds  
+        \item Yellow Time: 3 seconds  
+        \item All-Red Buffer: 1 second  
+        \item Vehicle/Pedestrian Crossing Time: 3 seconds  
+    \end{itemize}
+
+    \item \textbf{Queue Behaviour}  
+    Up to 60 vehicles/pedestrians may cross per activation cycle.
+
+    \item \textbf{Emergency Vehicle Handling}  
+    Emergency arrivals override normal behaviour only after the current direction has crossed its minimum green time. Also we assume while crossing that the emergency vehicle are at the front-most location.
+
+    \item \textbf{Pedestrian Safety}  
+    Pedestrian walk signal is never active when vehicles have green in the same direction.
+
+    \item \textbf{Channel Communication Assumption}  
+    All UPPAAL synchronisations occur without delay or loss.
+
+    \item \textbf{Deterministic Model}  
+    Arrival rates are nondeterministic but not probabilistic. The system behaviour is deterministic under UPPAAL semantics.
+\end{enumerate}
+
+
+% ===================================================
+% TEMPLATE SECTIONS
+% ===================================================
+
+\section{Template Descriptions}
+
+This section describes each UPPAAL template used in the model, along with an image placeholder for the corresponding automaton diagram.
+
+% ---------------------------------------
+% CENTRAL CONTROLLER
+% ---------------------------------------
+\subsection{CentralController Template}
+
+The CentralController coordinates the global traffic phases. It ensures that:
+\begin{itemize}
+    \item North–South and East–West directions never receive green simultaneously.
+    \item Minimum and maximum green times are enforced.
+    \item Emergency vehicle arrival triggers yellow transitions.
+    \item All-red safety buffers are satisfied before direction switching.
+\end{itemize}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{central_controller.png}
+\caption{CentralController Automaton}
+\end{figure}
+
+
+% ---------------------------------------
+% TRAFFIC LIGHT
+% ---------------------------------------
+\subsection{TrafficLight(dir) Template}
+
+This template governs the traffic signal for each direction. It includes four states: \textit{Green}, \textit{Yellow}, 
+\textit{RedBuffer}, and \textit{Red}. It synchronizes with the CentralController using:
+\begin{itemize}
+    \item \texttt{goGreen[dir]!}
+    \item \texttt{goYellow[dir]?} and \texttt{goYellow\_triggered[dir]?}
+    \item \texttt{goRed[dir]!}
+    \item \texttt{redWait[dir]?}
+\end{itemize}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{traffic_light.png}
+\caption{TrafficLight Template}
+\end{figure}
+
+
+% ---------------------------------------
+% VEHICLE ARRIVAL
+% ---------------------------------------
+\subsection{VehicleArrival(dir) Template}
+
+This template simulates nondeterministic arrival of vehicles. Each arrival increments the queue:
+\[
+    vehQ[dir] \leftarrow vehQ[dir] + 1
+\]
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.4\linewidth]{vehicle_arrival.png}
+\caption{VehicleArrival Template}
+\end{figure}
+
+
+% ---------------------------------------
+% VEHICLE CROSSING
+% ---------------------------------------
+\subsection{VehicleCrossing(dir) Template}
+Responsible for the movement of vehicles once the direction is green. It:
+\begin{itemize}
+    \item Checks whether \texttt{isGreen[dir\%2]} is true.
+    \item Triggers \texttt{start\_cross[dir\%2]!}.
+    \item Removes up to 60 vehicles from the queue.
+\end{itemize}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{vehicle_crossing.png}
+\caption{VehicleCrossing Template}
+\end{figure}
+
+
+% ---------------------------------------
+% PEDESTRIAN ARRIVAL
+% ---------------------------------------
+\subsection{Ped\_Arrival(dir) Template}
+
+Models pedestrian arrival using:
+\[
+    pedQ[dir] \leftarrow pedQ[dir] + 1
+\]
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.4\linewidth]{ped_arrival.png}
+\caption{Ped\_Arrival Template}
+\end{figure}
+
+
+% ---------------------------------------
+% PEDESTRIAN CONTROLLER
+% ---------------------------------------
+\subsection{Ped\_Controller(dir) Template}
+
+Controls pedestrian crossing behaviour. It ensures:
+\begin{itemize}
+    \item Pedestrians cross only when the corresponding direction is red.
+    \item A batch of pedestrians (up to 60) cross safely.
+\end{itemize}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{ped_controller.png}
+\caption{Ped\_Controller Template}
+\end{figure}
+
+
+% ---------------------------------------
+% EMERGENCY ARRIVAL
+% ---------------------------------------
+\subsection{Emg\_Arrival(dir) Template}
+
+This template generates emergency vehicle arrival signals.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{emg_arrival.png}
+\caption{Emg\_Arrival Template}
+\end{figure}
+
+
+% ---------------------------------------
+% EMERGENCY CONTROLLER
+% ---------------------------------------
+\subsection{Emg\_Controller(dir) Template}
+
+Handles emergency priority. If an emergency arrives and the direction is not green, it sends:
+\[
+    emg\_cross[dir]!
+\]
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{emg_controller.png}
+\caption{Emg\_Controller Template}
+\end{figure}
+
+
+% ===================================================
+% VERIFICATION
+% ===================================================
+
+\section{Verification of System Properties (IMMEDIATE Policy)}
+
+For this project we implemented the \textbf{IMMEDIATE} emergency-preemption policy:
+an emergency arrival can pre-empt ongoing normal operation (after minimum safety constraints)
+to give immediate priority to the emergency vehicle's direction.
+
+During verification we attempted to check both \textbf{safety} and \textbf{liveness} properties
+using UPPAAL’s exhaustive model checker. However, several universal safety properties
+expressed with the \texttt{A[]} operator caused \textbf{state-space explosion} in the model:
+the number of reachable states grew beyond what our machine (and UPPAAL’s exhaustive engine)
+could handle within acceptable time/memory limits.
+
+Below we state the properties we intended to verify, what we actually verified, and the
+strategies we applied to obtain useful results despite the state-space explosion.
+
+\subsection{Intended Properties (Formalised)}
+
+\paragraph{Safety (intended)}
+\begin{enumerate}
+    \item No simultaneous vehicle greens (NS vs EW):
+    \[
+        A[]\; \neg (isGreen[0] \land isGreen[1])
+    \]
+    \item No pedestrian walk while conflicting vehicle green:
+    \[
+        A[]\; \neg (pedLight[i] \land isGreen[i]) \qquad (i = 0,1)
+    \]
+    \item Emergency preemption preserves safety (mutual exclusion):
+    \[
+        A[]\; \neg (isGreen[0] \land isGreen[1])
+    \]
+\end{enumerate}
+
+\paragraph{Liveness (intended)}
+\[
+    A\Diamond (vehQ[i] == 0) \quad\text{and}\quad A\Diamond (pedQ[i] == 0) \qquad (i = 0..3)
+\]
+
+\paragraph{IMMEDIATE policy properties}
+\begin{enumerate}
+    \item Reachability of preemption (interruption possible):
+    \[
+        E\Diamond\; (isTriggered[i] \land isTriggeredPed[i])
+    \]
+    \item Emergency receives green within 5 seconds (bounded response):
+    \[
+        A[]\; (emg[dir] \Rightarrow \Diamond_{\,\le 5}\; isGreen[dir])
+    \]
+    \newline
+    \newline
+\end{enumerate}
+
+
+
+
+% ===================================================
+% GROUP CONTRIBUTIONS
+% ===================================================
+
+\section{Group Member Contributions}
+Although everyone had significant contributions in each component, these are the major contributions. 
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|p{11.5cm}|}
+\hline
+\textbf{Member} & \textbf{Major Contribution} \\
+\hline
+Dhaval Bothra & Modelling Vehicle logic and Central Controller templates. \\
+\hline
+Kandarp Kalavadiya & Modelling Pedestrian logic templates and document preparation. \\
+\hline
+Rachit Soni & Modelling Traffic Light and Emergency vehicle logic templates. \\
+\hline
+Ujwal Keshava & Modelling Traffic Light and Emergency vehicle logic templates. \\
+\hline
+Girish Mundra & Modelling Vehicle logic and Central Controller templates. \\
+\hline
+\end{tabular}
+\end{table}
+
+% ===================================================
+% REFERENCES
+% ===================================================
+\newpage
+\section{References}
+
+\begin{thebibliography}{9}
+
+\bibitem{uppaal_tutorial}
+Behrmann, G., David, A., \& Larsen, K. G. (2004).  
+\textit{A Tutorial on UPPAAL}.  
+Aalborg University.  
+Available at: \url{https://homes.cs.aau.dk/~bnielsen/MTV08/material/uppaal-tutorial.pdf}
+
+\bibitem{uppaal_simulator}
+UPPAAL Documentation — Concrete Simulator.  
+\textit{Available at:} \url{https://docs.uppaal.org/gui-reference/concrete-simulator/}
+
+\bibitem{kf6009}
+KF6009 Traffic Light Control System (GitHub Repository).  
+\textit{Available at:} \url{https://github.com/danielkelshaw/KF6009-TrafficLight}
+
+\bibitem{uppaal_expressions}
+UPPAAL Documentation — Expressions and Language Reference.  
+\textit{Available at:} \url{https://docs.uppaal.org/language-reference/expressions/}
+
+
+
+\bibitem{uppaal_traffic}
+Thamilselvam, B., \& Kalyanasundaram, S.  
+\textit{Coordinated Intelligent Traffic Lights using UPPAAL Stratego}.  
+Available at: \url{https://people.iith.ac.in/subruk/pdf/uppaal.pdf}
+
+
+
+
+\bibitem{uppaal_nutshell}
+Larsen, K. G., Pettersson, P., \& Yi, W. (1997).  
+\textit{UPPAAL in a Nutshell}.  
+In Proceedings of the REX Workshop, LNCS 600, Springer.  
+Available at: \url{https://uppaal.org/texts/lpw-sttt97.pdf}
+
+\end{thebibliography}
+
+
+% ===================================================
+% DOCUMENT END
+% ===================================================
+
+\end{document}
